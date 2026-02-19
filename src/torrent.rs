@@ -68,8 +68,29 @@ pub struct Info {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(untagged)]
 enum Keys {
-    SingleFile { length: usize },
-    MultiFile { files: File },
+    SingleFile {
+        length: usize,
+    },
+    MultiFile {
+        /*
+        * example -
+        * Say you're sharing a music album folder structured like this:
+
+          my-album/
+          ├── disc1/
+          │   ├── track01.mp3
+          │   └── track02.mp3
+          └── cover.jpg
+
+          then files would be :-
+        * files: [
+              { length: 5000000, path: ["disc1", "track01.mp3"] },
+              { length: 4200000, path: ["disc1", "track02.mp3"] },
+              { length: 150000,  path: ["cover.jpg"] },
+          ]
+        */
+        files: Vec<File>,
+    },
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -83,7 +104,7 @@ pub struct File {
 }
 
 #[derive(Debug, Clone)]
-struct Pieces(Vec<[u8; 20]>);
+pub struct Pieces(Vec<[u8; 20]>);
 struct PiecesVisitor;
 
 impl<'de> Visitor<'de> for PiecesVisitor {

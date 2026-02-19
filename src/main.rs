@@ -1,3 +1,6 @@
+use std::path::PathBuf;
+
+use anyhow::Context;
 use clap::{Parser, Subcommand};
 
 use crate::{commands::decode::decode_bencoded_value, torrent::Torrent};
@@ -15,24 +18,26 @@ struct Args {
 #[derive(Subcommand)]
 enum Commands {
     Decode { value: String },
-    Info { path: String },
+    Info { torrent: PathBuf },
 }
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     let args = Args::parse();
     match &args.command {
         Some(Commands::Decode { value }) => {
             let ans = decode_bencoded_value(value);
             println!("ans: {}", ans);
+            Ok(())
         }
-        Some(Commands::Info { path }) => {
-            let f = std::fs::read(path).unwrap();
-            let value: Torrent = serde_bencode::from_bytes(&f).unwrap();
+        Some(Commands::Info { torrent }) => {
+            let f = std::fs::read(torrent).context("read torrent file")?;
+            let value: Torrent = serde_bencode::from_bytes(&f).context("parse torrent file")?;
             println!(
                 "Tracker URL: {} Length: {}",
-                value.announce, value.info.length
-            )
+                value.announce, value.info.piece_len
+            );
+            Ok(())
         }
-        None => {}
+        _ => anyhow::bail!("invalid command"),
     }
 }
