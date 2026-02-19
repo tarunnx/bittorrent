@@ -1,4 +1,5 @@
 use serde_bencode::value::Value;
+use serde_json::Map;
 
 pub fn bencode_to_json(value: serde_bencode::value::Value) -> serde_json::Value {
     match value {
@@ -16,7 +17,15 @@ pub fn bencode_to_json(value: serde_bencode::value::Value) -> serde_json::Value 
 
             serde_json::Value::Array(lists)
         }
-        _ => unreachable!(),
+        Value::Dict(d) => {
+            let mut lists: serde_json::Map<String, serde_json::Value> = Map::new();
+            for (k, v) in d.into_iter() {
+                let ans = bencode_to_json(v);
+                lists.insert(String::from_utf8(k).unwrap(), ans);
+            }
+
+            serde_json::Value::Object(lists)
+        }
     }
 }
 
