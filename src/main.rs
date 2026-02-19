@@ -13,7 +13,6 @@ struct Args {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// does testing things
     Decode { value: String },
 }
 

@@ -11,7 +11,7 @@ pub fn decode_bencoded_value(encoded_value: &str) -> serde_json::Value {
             return value.into();
         }
         '0'..='9' => {
-            let word = encoded_value.split(':').nth(1).unwrap();
+            let (_, word) = encoded_value.split_once(':').unwrap();
             return serde_json::Value::String(word.to_string());
         }
         _ => {
