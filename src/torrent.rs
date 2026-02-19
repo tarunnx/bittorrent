@@ -18,8 +18,9 @@ pub struct Info {
     #[serde(rename = "piece length")]
     pub piece_len: usize,
     /// concatenated SHA1 hashes
+    #[serde(with = "serde_bytes")]
     pub pieces: Vec<u8>,
-    pub length: Option<usize>,
+    pub length: usize,
     pub files: Option<Vec<File>>,
 }
 

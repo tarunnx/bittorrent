@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 
-use crate::commands::decode::decode_bencoded_value;
+use crate::{commands::decode::decode_bencoded_value, torrent::Torrent};
 
 mod commands;
 mod torrent;
@@ -15,6 +15,7 @@ struct Args {
 #[derive(Subcommand)]
 enum Commands {
     Decode { value: String },
+    Info { path: String },
 }
 
 fn main() {
@@ -23,6 +24,14 @@ fn main() {
         Some(Commands::Decode { value }) => {
             let ans = decode_bencoded_value(value);
             println!("ans: {}", ans);
+        }
+        Some(Commands::Info { path }) => {
+            let f = std::fs::read(path).unwrap();
+            let value: Torrent = serde_bencode::from_bytes(&f).unwrap();
+            println!(
+                "Tracker URL: {} Length: {}",
+                value.announce, value.info.length
+            )
         }
         None => {}
     }
