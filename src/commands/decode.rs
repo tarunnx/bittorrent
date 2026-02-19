@@ -1,21 +1,26 @@
-pub fn decode_bencoded_value(encoded_value: &str) -> serde_json::Value {
-    match encoded_value.chars().next().unwrap() {
-        'i' => {
-            let value = encoded_value
-                .strip_prefix('i')
-                .unwrap()
-                .strip_suffix('e')
-                .unwrap()
-                .parse::<i64>()
-                .unwrap();
-            return value.into();
+use serde_bencode::value::Value;
+
+pub fn bencode_to_json(value: serde_bencode::value::Value) -> serde_json::Value {
+    match value {
+        Value::Int(i) => i.into(),
+        Value::Bytes(b) => {
+            let s = String::from_utf8(b).unwrap();
+            serde_json::Value::String(s)
         }
-        '0'..='9' => {
-            let (_, word) = encoded_value.split_once(':').unwrap();
-            return serde_json::Value::String(word.to_string());
+        Value::List(l) => {
+            let mut lists: Vec<serde_json::Value> = Vec::new();
+            for v in l.into_iter() {
+                let ans = bencode_to_json(v);
+                lists.push(ans);
+            }
+
+            serde_json::Value::Array(lists)
         }
-        _ => {
-            panic!("Unhandled encoded value: {}", encoded_value)
-        }
+        _ => unreachable!(),
     }
+}
+
+pub fn decode_bencoded_value(encoded_value: &str) -> serde_json::Value {
+    let value = serde_bencode::from_str(encoded_value).unwrap();
+    bencode_to_json(value)
 }
