@@ -29,10 +29,10 @@
 */
 
 use serde::de::{self, Visitor};
-use serde::{Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize};
 use std::fmt;
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Torrent {
     /// tracker URL
     pub announce: String,
@@ -40,7 +40,7 @@ pub struct Torrent {
     pub info: Info,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Info {
     /// suggested filename/directory name - The name key maps to a UTF-8 encoded string
     /// which is the suggested name to save the file (or directory) as.
@@ -65,7 +65,7 @@ pub struct Info {
     keys: Keys,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(untagged)]
 enum Keys {
     SingleFile {
@@ -93,7 +93,7 @@ enum Keys {
     },
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct File {
     /// The length of the file, in bytes
     pub length: usize,
@@ -103,7 +103,7 @@ pub struct File {
     pub path: Vec<String>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Pieces(Vec<[u8; 20]>);
 struct PiecesVisitor;
 
