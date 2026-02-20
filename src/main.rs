@@ -5,7 +5,6 @@ use bittorrent::{
 };
 use sha1::{Digest, Sha1};
 use std::path::PathBuf;
-use ulid::Ulid;
 
 use anyhow::Context;
 use clap::{Parser, Subcommand};
@@ -46,16 +45,20 @@ async fn main() -> anyhow::Result<()> {
 
             let bencoded_info =
                 serde_bencode::to_bytes(&value.info).context("bencoding of info")?;
+
             let mut hasher = Sha1::new();
 
             // process input message
             hasher.update(bencoded_info);
             let result = hasher.finalize();
 
-            println!("Info Hash: {:02x}", result);
+            println!("Info Hash: {}", hex::encode(result));
             println!("Piece Length: {}", value.info.piece_len);
 
-            value.info.pieces.hashes();
+            println!("Pieces Hashes: ");
+            for piece in value.info.pieces.0 {
+                println!("{}", hex::encode(piece));
+            }
 
             Ok(())
         }
@@ -76,15 +79,15 @@ async fn main() -> anyhow::Result<()> {
                 todo!()
             };
 
-            let request = TrackerRequest {
-                info_hash,
-                compact: 1,
-                uploaded: 0,
-                downloaded: 0,
-                left: length,
-                peer_id: String::from("00112233445566778899"),
-                port: 6881,
-            };
+            // let request = TrackerRequest {
+            //     info_hash,
+            //     compact: 1,
+            //     uploaded: 0,
+            //     downloaded: 0,
+            //     left: length,
+            //     peer_id: String::from("00112233445566778899"),
+            //     port: 6881,
+            // };
             Ok(())
         }
         _ => anyhow::bail!("invalid command"),

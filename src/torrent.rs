@@ -52,7 +52,7 @@ pub struct Info {
     /// is split into. For the purposes of transfer, files are split into fixed-size pieces
     /// which are all the same length except for possibly the last one which may be truncated.
     /// piece length is almost always a power of two,
-    /// most commonly 2 18 = 256 K (BitTorrent prior to version 3.2 uses 2 20 = 1 M as default).
+    /// most commonly 2^18 = 256 K (BitTorrent prior to version 3.2 uses 2 20 = 1 M as default).
     #[serde(rename = "piece length")]
     pub piece_len: usize,
 
@@ -106,17 +106,8 @@ pub struct File {
 }
 
 #[derive(Debug, Clone)]
-pub struct Pieces(Vec<[u8; 20]>);
+pub struct Pieces(pub Vec<[u8; 20]>);
 struct PiecesVisitor;
-
-impl Pieces {
-    pub fn hashes(&self) {
-        println!("Piece Hashes:");
-        for hash in &self.0 {
-            println!("{}", hex::encode(&hash));
-        }
-    }
-}
 
 impl<'de> Visitor<'de> for PiecesVisitor {
     type Value = Pieces;
