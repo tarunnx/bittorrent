@@ -31,7 +31,6 @@
 use serde::de::{self, Visitor};
 use serde::ser::Serializer;
 use serde::{Deserialize, Deserializer, Serialize};
-use sha1::{Digest, Sha1};
 
 use std::fmt;
 
@@ -114,10 +113,7 @@ impl Pieces {
     pub fn hashes(&self) {
         println!("Piece Hashes:");
         for hash in &self.0 {
-            for byte in hash {
-                print!("{:02x}", byte);
-            }
-            println!()
+            println!("{}", hex::encode(&hash));
         }
     }
 }
