@@ -31,6 +31,7 @@
 use serde::de::{self, Visitor};
 use serde::ser::Serializer;
 use serde::{Deserialize, Deserializer, Serialize};
+use sha1::{Digest, Sha1};
 
 use std::fmt;
 
@@ -108,6 +109,18 @@ pub struct File {
 #[derive(Debug, Clone)]
 pub struct Pieces(Vec<[u8; 20]>);
 struct PiecesVisitor;
+
+impl Pieces {
+    pub fn hashes(&self) {
+        println!("Piece Hashes:");
+        for hash in &self.0 {
+            for byte in hash {
+                print!("{:02x}", byte);
+            }
+            println!()
+        }
+    }
+}
 
 impl<'de> Visitor<'de> for PiecesVisitor {
     type Value = Pieces;

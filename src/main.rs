@@ -53,6 +53,9 @@ fn main() -> anyhow::Result<()> {
             let result = hasher.finalize();
 
             println!("Info Hash: {:02x}", result);
+            println!("Piece Length: {}", value.info.piece_len);
+
+            value.info.pieces.hashes();
 
             Ok(())
         }
