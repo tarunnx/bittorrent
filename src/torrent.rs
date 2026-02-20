@@ -29,7 +29,9 @@
 */
 
 use serde::de::{self, Visitor};
+use serde::ser::Serializer;
 use serde::{Deserialize, Deserializer, Serialize};
+
 use std::fmt;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -62,12 +64,12 @@ pub struct Info {
     /// If length is present then the download represents a single file
     /// In the single file case, length maps to the length of the file in bytes
     #[serde(flatten)]
-    keys: Keys,
+    pub keys: Keys,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(untagged)]
-enum Keys {
+pub enum Keys {
     SingleFile {
         length: usize,
     },
@@ -103,7 +105,7 @@ pub struct File {
     pub path: Vec<String>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone)]
 pub struct Pieces(Vec<[u8; 20]>);
 struct PiecesVisitor;
 
@@ -137,5 +139,15 @@ impl<'de> Deserialize<'de> for Pieces {
         D: Deserializer<'de>,
     {
         deserializer.deserialize_bytes(PiecesVisitor)
+    }
+}
+
+impl Serialize for Pieces {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let single_slice = self.0.concat();
+        serializer.serialize_bytes(&single_slice)
     }
 }

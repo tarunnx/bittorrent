@@ -4,7 +4,10 @@ use std::path::PathBuf;
 use anyhow::Context;
 use clap::{Parser, Subcommand};
 
-use crate::{commands::decode::decode_bencoded_value, torrent::Torrent};
+use crate::{
+    commands::decode::decode_bencoded_value,
+    torrent::{Keys, Torrent},
+};
 
 mod commands;
 mod torrent;
@@ -34,7 +37,12 @@ fn main() -> anyhow::Result<()> {
             let f = std::fs::read(torrent).context("read torrent file")?;
             let value: Torrent = serde_bencode::from_bytes(&f).context("parse torrent file")?;
             println!("Tracker URL: {}", value.announce);
-            println!("Length: {}", value.info.piece_len);
+
+            if let Keys::SingleFile { length } = value.info.keys {
+                println!("Length: {}", length);
+            } else {
+                todo!()
+            }
 
             let bencoded_info =
                 serde_bencode::to_bytes(&value.info).context("bencoding of info")?;
