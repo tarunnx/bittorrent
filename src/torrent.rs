@@ -28,9 +28,11 @@
 *
 */
 
+use anyhow::Context;
 use serde::de::{self, Visitor};
 use serde::ser::Serializer;
 use serde::{Deserialize, Deserializer, Serialize};
+use sha1::{Digest, Sha1};
 
 use std::fmt;
 
@@ -40,6 +42,21 @@ pub struct Torrent {
     pub announce: String,
     /// describes the file
     pub info: Info,
+}
+
+impl Torrent {
+    pub fn info_hash(&self) -> anyhow::Result<[u8; 20]> {
+        let bencoded_info = serde_bencode::to_bytes(&self.info).context("bencoding of info")?;
+
+        let mut hasher = Sha1::new();
+
+        // process input message
+        hasher.update(bencoded_info);
+        Ok(hasher
+            .finalize()
+            .try_into()
+            .expect("GenericArray<_, 20> == [_; 20];"))
+    }
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
