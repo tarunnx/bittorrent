@@ -6,7 +6,8 @@ pub struct TrackerRequest {
     ///
     /// 20 bytes long, will need to be URL encoded
     /// Note: this is NOT the hexadecimal representation, which is 40 bytes long
-    pub info_hash: [u8; 20],
+    /// not included because of serde_urlencoder was not working for this
+    // pub info_hash: [u8; 20],
 
     /// a unique identifier for your client
     /// A string of length 20 that you get to pick.
@@ -33,4 +34,15 @@ pub struct TrackerRequest {
     /// For the purposes of this challenge, set this to 1.
     /// The compact representation is more commonly used in the wild, the non-compact representation is mostly supported for backward-compatibility.
     pub compact: usize,
+}
+
+pub fn urlencode(t: &[u8; 20]) -> String {
+    let mut encoded = String::with_capacity(3 * t.len());
+
+    for &byte in t {
+        encoded.push('%');
+        encoded.push_str(&hex::encode(&[byte]));
+    }
+
+    encoded
 }

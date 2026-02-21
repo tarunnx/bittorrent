@@ -1,7 +1,10 @@
 use bittorrent::{
     commands::decode::decode_bencoded_value,
     torrent::{Keys, Torrent},
-    tracker::request::TrackerRequest,
+    tracker::{
+        request::{TrackerRequest, urlencode},
+        response::TrackerResponse,
+    },
 };
 use std::path::PathBuf;
 
@@ -67,7 +70,6 @@ async fn main() -> anyhow::Result<()> {
             };
 
             let request = TrackerRequest {
-                info_hash: info_hash,
                 compact: 1,
                 uploaded: 0,
                 downloaded: 0,
@@ -76,15 +78,23 @@ async fn main() -> anyhow::Result<()> {
                 port: 6881,
             };
 
-            let mut tracker_url =
-                reqwest::Url::from(t.announce.parse().context("String to reqwest Url")?);
             let url_params = serde_urlencoded::to_string(&request).context("url encoding")?;
 
-            tracker_url.set_query(Some(&url_params));
+            let tracker_url = format!(
+                "{}?{}&info_hash={}",
+                t.announce,
+                url_params,
+                &urlencode(&info_hash)
+            );
 
-            let response = reqwest::get(tracker_url).await;
+            let response = reqwest::get(tracker_url).await.context("query tracker")?;
+            let response = response.bytes().await.context("fetch tracker response")?;
+            let response: TrackerResponse =
+                serde_bencode::from_bytes(&response).context("parse tracker response")?;
 
-            println!("{:?}", response);
+            for peer in response.peers.0 {
+                println!("{peer}");
+            }
 
             Ok(())
         }
